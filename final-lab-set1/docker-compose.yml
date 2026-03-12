@@ -92,5 +92,3 @@ volumes:
 networks:
   taskboard-net:
     driver: bridge
-
-# ──────────────────────────────────────────

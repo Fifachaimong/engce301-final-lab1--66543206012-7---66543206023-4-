@@ -1,53 +1,86 @@
-const { verifyToken } = require('../jwtUtils');
+import jwt from "jsonwebtoken";
 
-module.exports = function requireAuth(req, res, next) {
-  const header = req.headers['authorization'] || '';
-  const token  = header.startsWith('Bearer ') ? header.slice(7) : null;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized: No token provided' });
-  }
-  try {
-    req.user = verifyToken(token);  // { sub, email, role, username }
-    next();
-  } catch (err) {
-    // ส่ง log JWT error ไปยัง Log Service (fire-and-forget)
-    fetch('http://log-service:3003/api/logs/internal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        service: 'task-service', level: 'ERROR', event: 'JWT_INVALID',
-        ip_address: req.headers['x-real-ip'] || req.ip,
-        message: 'Invalid JWT token: ' + err.message,
-        meta: { error: err.message }
-      })
-    }).catch(() => {});
-    return res.status(401).json({ error: 'Unauthorized: ' + err.message });
-  }
-};const { verifyToken } = require('../jwtUtils');
+/**
+ * helper สำหรับส่ง log ไป Log Service
+ */
+function logEvent(level, event, message, req, meta = {}) {
+  fetch("http://log-service:3003/api/logs/internal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      service: "task-service",
+      level,
+      event,
+      ip_address: req.headers["x-real-ip"] || req.ip,
+      message,
+      meta
+    })
+  }).catch(() => {});
+}
 
-module.exports = function requireAuth(req, res, next) {
-  const header = req.headers['authorization'] || '';
-  const token  = header.startsWith('Bearer ') ? header.slice(7) : null;
+/**
+ * Middleware ตรวจสอบ JWT Token
+ */
+function requireAuth(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    return res.status(401).json({
+      error: "Unauthorized",
+      message: "กรุณา Login ก่อน — ไม่พบ Token ใน Authorization header"
+    });
   }
+
   try {
-    req.user = verifyToken(token);  // { sub, email, role, username }
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
     next();
   } catch (err) {
-    // ส่ง log JWT error ไปยัง Log Service (fire-and-forget)
-    fetch('http://log-service:3003/api/logs/internal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        service: 'task-service', level: 'ERROR', event: 'JWT_INVALID',
-        ip_address: req.headers['x-real-ip'] || req.ip,
-        message: 'Invalid JWT token: ' + err.message,
-        meta: { error: err.message }
-      })
-    }).catch(() => {});
-    return res.status(401).json({ error: 'Unauthorized: ' + err.message });
+
+    logEvent(
+      "ERROR",
+      "JWT_INVALID",
+      "Invalid JWT token: " + err.message,
+      req,
+      { error: err.message }
+    );
+
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        error: "Token Expired",
+        message: "Token หมดอายุ กรุณา Login ใหม่"
+      });
+    }
+
+    return res.status(401).json({
+      error: "Invalid Token",
+      message: "Token ไม่ถูกต้อง"
+    });
   }
-};
+}
+
+/**
+ * Middleware ตรวจสอบ Role
+ */
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: "Forbidden",
+        message: `ต้องการสิทธิ์: ${roles.join(" หรือ ")} (คุณมีสิทธิ์: ${req.user.role})`
+      });
+    }
+
+    next();
+  };
+}
+
+export default requireAuth;
+export { requireRole };
