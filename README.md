@@ -263,18 +263,18 @@ POST /api/logs/internal
 
 # 📸 Screenshots
 
-1. [01 - Docker Running](final-lablset/screenshots/T1.jpg)
-2. [02 - HTTPS in Browser](final-lablset/screenshots/T2.jpg)
-3. [03 - Login Success](final-lablset/screenshots/T3.jpg)
-4. [04 - Login Fail](final-lablset/screenshots/T4.jpg)
-5. [05 - Create Task](final-lablset/screenshots/T5.jpg)
-6. [06 - Get Tasks](final-lablset/screenshots/T6.jpg)
-7. [07 - Update Task](final-lablset/screenshots/T7.png)
-8. [08 - Delete Task](final-lablset/screenshots/T8.png)
-9. [09 - No JWT 401 Unauthorized](final-lablset/screenshots/T9.jpg)
-10. [10 - API Logs](final-lablset/screenshots/T10.jpg)
-11. [11 - Rate Limiting](final-lablset/screenshots/T11.jpg)
-12. [12 - Frontend Screenshot](final-lablset/screenshots/T12.jpg)
+1. [01 - Docker Running](final-labl-set1/screenshots/T1.jpg)
+2. [02 - HTTPS in Browser](final-labl-set1/screenshots/T2.jpg)
+3. [03 - Login Success](final-lab-set1/screenshots/T3.jpg)
+4. [04 - Login Fail](final-lab-set1/screenshots/T4.jpg)
+5. [05 - Create Task](final-lab-set1/screenshots/T5.jpg)
+6. [06 - Get Tasks](final-lab-set1/screenshots/T6.jpg)
+7. [07 - Update Task](final-lab-set1/screenshots/T7.png)
+8. [08 - Delete Task](final-lab-set1/screenshots/T8.png)
+9. [09 - No JWT 401 Unauthorized](final-lab-set1/screenshots/T9.jpg)
+10. [10 - API Logs](final-lab-set1/screenshots/T10.jpg)
+11. [11 - Rate Limiting](final-lab-set1/screenshots/T11.jpg)
+12. [12 - Frontend Screenshot](final-lab-set1/screenshots/T12.jpg)
 
 ---
 
